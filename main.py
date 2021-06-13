@@ -1,13 +1,15 @@
-# import numpy as np
 import csv
 import torch
 from torch.utils import data
 from torch import nn
 import torchvision.transforms as transforms
+# import json
+# import numpy as np
+# import matplotlib.pyplot as plt
 
 path = "D:/Projects/Major project/csv_keypoints/KeypointData.csv"
 
-no_columns = 41
+no_columns = 55
 no_meta_data_rows = 2
 no_meta_data_columns = 5
 limit = 20000
@@ -79,7 +81,7 @@ class Discriminator(nn.Module):
     def __init__(self):
         super().__init__()
         self.model = nn.Sequential(
-            nn.Linear(36, 256),
+            nn.Linear(50, 256),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(256, 128),
@@ -93,7 +95,7 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, x):
-        x = x.view(x.size(0), 36)
+        x = x.view(x.size(0), 50)
         output = self.model(x)
         return output
 
@@ -111,13 +113,13 @@ class Generator(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 1024),
             nn.ReLU(),
-            nn.Linear(1024, 36),
+            nn.Linear(1024, 50),
             nn.Tanh()
         )
 
     def forward(self, x):
         output = self.model(x)
-        output = output.view(x.size(0), 18, 2)
+        output = output.view(x.size(0), 25, 2)
         output.type(dtype=torch.FloatTensor)
         return output
 
@@ -131,7 +133,7 @@ loss_function = nn.BCELoss()
 optimizer_discriminator = torch.optim.Adam(discriminator.parameters(), lr=lr)
 optimizer_generator = torch.optim.Adam(generator.parameters(), lr=lr)
 
-for epoch in range(num_epochs):
+for epoch in range(3):
     for n, (real_samples, _) in enumerate(train_loader):
         # Data for training the discriminator
         real_samples = real_samples.type(dtype=torch.FloatTensor)
@@ -170,3 +172,12 @@ for epoch in range(num_epochs):
         if epoch % 2 == 0 and n == batch_size - 1:
             print(f"Epoch: {epoch} Loss D.: {loss_discriminator}")
             print(f"Epoch: {epoch} Loss G.: {loss_generator}")
+
+# latent_space_samples = torch.randn((1, 100))
+# generated_samples = generator(latent_space_samples)
+# generated_samples = generated_samples.detach().numpy()
+# generated_samples = generated_samples.reshape(18, 2)
+# np.savetxt("coordinates.csv", generated_samples, delimiter=",")
+# print("Output saved to coordinates.csv file....")
+# plt.plot(generated_samples[:, 0], generated_samples[:, 1], ".")
+
